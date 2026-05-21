@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import LandingPage from "./components/LandingPage";
 import AuthPage from "./components/AuthPage";
 import ChatPage from "./components/ChatPage";
-import AboutPage from "./components/AboutPage";     // 👍 Imported About page
-import PrivacyPage from "./components/PrivacyPage"; // 👍 Imported Privacy page
+import AboutPage from "./components/AboutPage";     
+import PrivacyPage from "./components/PrivacyPage"; 
+import { AlaafiaLogo } from "./config.jsx"; // 👍 Imported logo asset to support the inline loading presentation
 import { registerUser, loginUser, logoutUser, getCurrentUser } from "./services/api";
 
 export default function App() {
@@ -15,15 +16,25 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 1. Inject Fonts & Check existing persistent sessions on initial boot
+  // 1. Inject Fonts, Keyframes & Check existing persistent sessions on initial boot
   useEffect(() => {
-    // Dynamic Typography Injection
+    // Dynamic Typography & Core Brand Animation Keyframes Injection
     if (!document.getElementById("alaafia-fonts")) {
       const link = document.createElement("link");
       link.id = "alaafia-fonts";
       link.href = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600&display=swap";
       link.rel = "stylesheet";
       document.head.appendChild(link);
+
+      // Injecting a clean CSS pulsing keyframe for the initialization splash mark
+      const styleSheet = document.createElement("style");
+      styleSheet.innerText = `
+        @keyframes alaafiaPulse {
+          0%, 100% { opacity: 0.6; transform: scale(0.96); }
+          50% { opacity: 1; transform: scale(1.04); }
+        }
+      `;
+      document.head.appendChild(styleSheet);
     }
 
     // Checking Active User State via your API SDK
@@ -44,7 +55,7 @@ export default function App() {
       setUser(newUser);
     } catch (err) {
       alert(err.message || "An error occurred during registration.");
-      throw err; // Propagate down to Auth UI component layer to prevent view switches
+      throw err; 
     }
   };
 
@@ -55,7 +66,7 @@ export default function App() {
       setUser(loggingUser);
     } catch (err) {
       alert("Wrong email or password");
-      throw err; // Propagate down to Auth UI component layer to prevent view switches
+      throw err; 
     }
   };
 
@@ -72,26 +83,40 @@ export default function App() {
   };
 
   // ─── CONNECT TRAFFIC ROUTER ───
-  // Captures target modes passed dynamically from LandingPage clicks
   const handleGetStartedRouting = (targetMode) => {
-    // 👍 Checks if the incoming view target is a content page or auth view
     if (targetMode === "about" || targetMode === "privacy") {
       setView(targetMode);
     } else {
-      setAuthMode(targetMode); // Stores either "signup" or "login"
-      setView("auth"); // Shifts viewport path layout to AuthPage
+      setAuthMode(targetMode); 
+      setView("auth"); 
     }
   };
 
-  // 5. Global Initialization Loading Screen 
+  // 5. 👍 Premium Global Initialization Loading Screen with integrated side logo
   if (loading) {
     return (
       <div style={{
         display: "flex", justifyContent: "center", alignItems: "center", 
-        height: "100vh", background: "#FBF5EE", fontFamily: "'Outfit', sans-serif", color: "#2C1A0E"
+        height: "100vh", background: "#FBF5EE", fontFamily: "'Outfit', sans-serif"
       }}>
-        <div style={{ textAlign: "center" }}>
-          <h3>Checking session...</h3>
+        <div style={{ 
+          display: "flex", 
+          alignItems: "center", 
+          gap: "12px",
+          animation: "alaafiaPulse 2s infinite ease-in-out",
+          userSelect: "none"
+        }}>
+          <AlaafiaLogo size={32} />
+          <h3 style={{ 
+            fontFamily: "'Cormorant Garamond', serif", 
+            fontSize: "1.6rem", 
+            fontWeight: 700, 
+            color: "#2C1A0E",
+            letterSpacing: "-0.01em",
+            margin: 0
+          }}>
+            Alaafia
+          </h3>
         </div>
       </div>
     );
@@ -102,12 +127,10 @@ export default function App() {
     return <ChatPage user={user} onSignOut={handleLogout} />;
   }
 
-  // 👍 Mounts About document view block contextually
   if (view === "about") {
     return <AboutPage onBack={() => setView("landing")} />;
   }
 
-  // 👍 Mounts Privacy document view block contextually
   if (view === "privacy") {
     return <PrivacyPage onBack={() => setView("landing")} />;
   }
@@ -115,7 +138,7 @@ export default function App() {
   if (view === "auth") {
     return (
       <AuthPage 
-        initialMode={authMode} // Pushes user selection directly to state hooks inside AuthPage
+        initialMode={authMode} 
         onLogin={handleLogin} 
         onRegister={handleRegister} 
         onBack={() => setView("landing")} 
