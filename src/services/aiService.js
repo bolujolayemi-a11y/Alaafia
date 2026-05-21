@@ -62,7 +62,7 @@ async function callOpenRouter(messages) {
     headers: {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-      "HTTP-Referer": "https://alaafia.netlify.app",
+      "HTTP-Referer": "https://alaafia-xi.netlify.app",
       "X-Title": "Alaafia"
     },
     body: JSON.stringify({
