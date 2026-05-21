@@ -1,15 +1,19 @@
 import React, { useState } from "react";
-import { C, btn, AlaafiaLogo } from "../config";
+import { C, btn, AlaafiaLogo } from "../config.jsx";
 
-export default function AuthPage({ onLogin, onRegister, onBack }) {
-  const [mode, setMode] = useState("signup");
+// 👍 Added initialMode prop (defaults to "signup" if none is passed)
+export default function AuthPage({ onLogin, onRegister, onBack, initialMode = "signup" }) {
+  // 👍 The state initializes with whatever flag was passed from Landing Page
+  const [mode, setMode] = useState(initialMode);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false); 
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setError("");
     
     // Client Validation Guards
@@ -24,7 +28,6 @@ export default function AuthPage({ onLogin, onRegister, onBack }) {
         await onLogin(email, password);
       }
     } catch (err) {
-      // Errors are caught and parsed inside App.jsx handlers
       setError(err.message || "Authentication process aborted.");
     } finally {
       setSubmitting(false);
@@ -43,18 +46,33 @@ export default function AuthPage({ onLogin, onRegister, onBack }) {
       fontFamily: "'Outfit', sans-serif", minHeight: "100vh", background: C.bg,
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 20px",
     }}>
+      {/* Back Navigation Trigger */}
       <button onClick={onBack} disabled={submitting} style={{
         position: "absolute", top: 24, left: 32, background: "none", border: "none",
         cursor: submitting ? "not-allowed" : "pointer", color: C.muted, fontSize: "0.9rem", display: "flex", alignItems: "center", gap: 6,
       }}>← Go Back</button>
 
-      <div style={{ textAlign: "center", marginBottom: 36 }}>
-        <AlaafiaLogo size={44} />
-        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.8rem", fontWeight: 700, color: C.primary, marginTop: 10 }}>
+      {/* Brand Header Wrapper */}
+      <div style={{ 
+        display: "flex", 
+        alignItems: "center", 
+        justifyContent: "center", 
+        gap: "12px", 
+        marginBottom: "36px" 
+      }}>
+        <AlaafiaLogo size={36} />
+        <h1 style={{ 
+          fontFamily: "'Cormorant Garamond', serif", 
+          fontSize: "2.2rem", 
+          fontWeight: 700, 
+          color: C.primary, 
+          margin: 0 
+        }}>
           Alaafia
-        </div>
+        </h1>
       </div>
 
+      {/* Authentication Container Panel */}
       <div style={{
         background: C.white, borderRadius: 24, padding: "40px 44px",
         width: "100%", maxWidth: 420, border: `1px solid ${C.border}`,
@@ -63,7 +81,7 @@ export default function AuthPage({ onLogin, onRegister, onBack }) {
         {/* Toggle Switch Tabs */}
         <div style={{ display: "flex", background: C.surface, borderRadius: 12, padding: 4, marginBottom: 32 }}>
           {["signup", "login"].map(m => (
-            <button key={m} onClick={() => !submitting && setMode(m)} style={{
+            <button key={m} type="button" onClick={() => !submitting && setMode(m)} style={{
               flex: 1, padding: "10px", borderRadius: 9, border: "none", 
               cursor: submitting ? "not-allowed" : "pointer",
               fontFamily: "'Outfit', sans-serif", fontWeight: 600, fontSize: "0.9rem", transition: "all 0.2s",
@@ -76,36 +94,73 @@ export default function AuthPage({ onLogin, onRegister, onBack }) {
           ))}
         </div>
 
-        {/* Input Interactive Collection Field Layers */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        {/* Form Inputs Container */}
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {mode === "signup" && (
             <div>
               <label style={{ fontSize: "0.85rem", fontWeight: 500, color: C.text, display: "block", marginBottom: 6 }}>Full Name</label>
-              <input style={inputStyle} disabled={submitting} placeholder="e.g. Tunde Balogun" value={name} onChange={e => setName(e.target.value)} />
+              <input 
+                style={inputStyle} 
+                disabled={submitting} 
+                placeholder="e.g. Tunde Balogun" 
+                value={name} 
+                onChange={e => setName(e.target.value)} 
+                autoComplete="name"
+              />
             </div>
           )}
           <div>
             <label style={{ fontSize: "0.85rem", fontWeight: 500, color: C.text, display: "block", marginBottom: 6 }}>Email Address</label>
-            <input style={inputStyle} type="email" disabled={submitting} placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} />
+            <input 
+              style={inputStyle} 
+              type="email" 
+              disabled={submitting} 
+              placeholder="you@example.com" 
+              value={email} 
+              onChange={e => setEmail(e.target.value)} 
+              autoComplete="username"
+            />
           </div>
           <div>
             <label style={{ fontSize: "0.85rem", fontWeight: 500, color: C.text, display: "block", marginBottom: 6 }}>Password</label>
-            <input style={inputStyle} type="password" disabled={submitting} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} />
+            <div style={{ position: "relative", width: "100%" }}>
+              <input 
+                style={{ ...inputStyle, paddingRight: "46px" }} 
+                type={showPassword ? "text" : "password"} 
+                disabled={submitting} 
+                placeholder="••••••••" 
+                value={password} 
+                onChange={e => setPassword(e.target.value)} 
+                autoComplete={mode === "signup" ? "new-password" : "current-password"}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)",
+                  background: "none", border: "none", cursor: "pointer", color: C.muted,
+                  fontSize: "1.1rem", display: "flex", alignItems: "center", justifyContent: "center",
+                  padding: "4px", outline: "none"
+                }}
+              >
+                {showPassword ? "👁️" : "🙈"}
+              </button>
+            </div>
           </div>
           
           {error && <p style={{ color: "#b5341e", fontSize: "0.85rem", margin: 0 }}>⚠️ {error}</p>}
           
           <button 
+            type="submit"
             style={btn("primary", { 
               width: "100%", marginTop: 8, padding: "14px", borderRadius: 12, 
               opacity: submitting ? 0.7 : 1, cursor: submitting ? "not-allowed" : "pointer" 
             })} 
-            onClick={handleSubmit}
             disabled={submitting}
           >
             {submitting ? "Processing..." : mode === "signup" ? "Create Account →" : "Access Console →"}
           </button>
-        </div>
+        </form>
       </div>
     </div>
   );

@@ -1,20 +1,26 @@
-import { SYSTEM_PROMPT } from "../config";
+import { SYSTEM_PROMPT } from "../config.jsx"; // Assuming config.jsx change from before
 
-const GROQ_API_KEY = "YOUR_GROQ_API_KEY";
-const OPENROUTER_API_KEY = "YOUR_OPENROUTER_API_KEY";
+// Vite requires the VITE_ prefix to securely expose keys to your frontend client
+const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY;
+const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY;
 
 /**
  * Main AI Query Broker
  * Tries Groq (Primary, Ultra Fast) -> Falls back to OpenRouter (Secondary)
  */
 export async function getHealthGuidance(chatHistory) {
+  // Helpful developer check if your keys aren't loading properly
+  if (!GROQ_API_KEY) {
+    console.error("Vite Key Check: VITE_GROQ_API_KEY is undefined. Did you create your local .env file?");
+  }
+
   const formattedMessages = [
     { role: "system", content: SYSTEM_PROMPT },
     ...chatHistory.map(m => ({ role: m.role, content: m.content }))
   ];
 
   try {
-    // 1. Try Groq Cloud First
+    // 1. Try Groq Cloud First (Instant Model)
     return await callGroq(formattedMessages);
   } catch (groqError) {
     console.warn("Groq failed or timed out. Redirecting traffic to OpenRouter fallback layer...", groqError);
@@ -24,7 +30,8 @@ export async function getHealthGuidance(chatHistory) {
       return await callOpenRouter(formattedMessages);
     } catch (openRouterError) {
       console.error("All available AI network layers are currently unreachable.", openRouterError);
-      throw new Error("Network connectivity issue. Please try your request again.");
+      // Changed to AI_ROUTING_FAIL so ChatPage can give an accurate error message
+      throw new Error("AI_ROUTING_FAIL");
     }
   }
 }
@@ -37,7 +44,7 @@ async function callGroq(messages) {
       "Authorization": `Bearer ${GROQ_API_KEY}`
     },
     body: JSON.stringify({
-      model: "llama3-8b-8192",
+      model: "llama-3.1-8b-instant",
       messages: messages,
       temperature: 0.5,
       max_tokens: 800
@@ -55,8 +62,8 @@ async function callOpenRouter(messages) {
     headers: {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-      "HTTP-Referer": "https://careloop-alaafia.netlify.app",
-      "X-Title": "Alaafia CareLoop"
+      "HTTP-Referer": "https://alaafia.netlify.app",
+      "X-Title": "Alaafia"
     },
     body: JSON.stringify({
       model: "google/gemini-2.5-flash",

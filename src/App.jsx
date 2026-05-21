@@ -2,11 +2,16 @@ import React, { useState, useEffect } from "react";
 import LandingPage from "./components/LandingPage";
 import AuthPage from "./components/AuthPage";
 import ChatPage from "./components/ChatPage";
-import { registerUser, loginUser, logoutUser, getCurrentUser } from "./services/api"; // Adjusted path to fit structure
+import AboutPage from "./components/AboutPage";     // 👍 Imported About page
+import PrivacyPage from "./components/PrivacyPage"; // 👍 Imported Privacy page
+import { registerUser, loginUser, logoutUser, getCurrentUser } from "./services/api";
 
 export default function App() {
-  // Navigation Routing States: "landing" | "auth"
+  // Navigation Routing States: "landing" | "auth" | "about" | "privacy"
   const [view, setView] = useState("landing");
+  // Sub-route state manager to pass direct focus down to specific tabs inside AuthPage
+  const [authMode, setAuthMode] = useState("signup"); 
+  
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -66,6 +71,18 @@ export default function App() {
     }
   };
 
+  // ─── CONNECT TRAFFIC ROUTER ───
+  // Captures target modes passed dynamically from LandingPage clicks
+  const handleGetStartedRouting = (targetMode) => {
+    // 👍 Checks if the incoming view target is a content page or auth view
+    if (targetMode === "about" || targetMode === "privacy") {
+      setView(targetMode);
+    } else {
+      setAuthMode(targetMode); // Stores either "signup" or "login"
+      setView("auth"); // Shifts viewport path layout to AuthPage
+    }
+  };
+
   // 5. Global Initialization Loading Screen 
   if (loading) {
     return (
@@ -85,9 +102,20 @@ export default function App() {
     return <ChatPage user={user} onSignOut={handleLogout} />;
   }
 
+  // 👍 Mounts About document view block contextually
+  if (view === "about") {
+    return <AboutPage onBack={() => setView("landing")} />;
+  }
+
+  // 👍 Mounts Privacy document view block contextually
+  if (view === "privacy") {
+    return <PrivacyPage onBack={() => setView("landing")} />;
+  }
+
   if (view === "auth") {
     return (
       <AuthPage 
+        initialMode={authMode} // Pushes user selection directly to state hooks inside AuthPage
         onLogin={handleLogin} 
         onRegister={handleRegister} 
         onBack={() => setView("landing")} 
@@ -95,5 +123,5 @@ export default function App() {
     );
   }
 
-  return <LandingPage onGetStarted={() => setView("auth")} />;
+  return <LandingPage onGetStarted={handleGetStartedRouting} />;
 }
