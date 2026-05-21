@@ -1,7 +1,19 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { C, btn, AlaafiaLogo } from "../config.jsx";
 
 export default function LandingPage({ onGetStarted }) {
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Monitor screen layout context changes to cleanly adjust nav layout rules dynamically
+  useEffect(() => {
+    const handleNavResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    handleNavResize();
+    window.addEventListener("resize", handleNavResize);
+    return () => window.removeEventListener("resize", handleNavResize);
+  }, []);
+
   const features = [
     {
       icon: "🌿",
@@ -46,28 +58,60 @@ export default function LandingPage({ onGetStarted }) {
 
   return (
     <div style={{ fontFamily: "'Outfit', sans-serif", background: C.bg, minHeight: "100vh" }}>
-      {/* Navigation Header */}
+      
+      {/* ─── FIXED RESPONSIVE NAVIGATION BAR ─── */}
       <nav style={{
-        display: "flex", justifyContent: "space-between", alignItems: "center",
-        padding: "20px 48px", borderBottom: `1px solid ${C.border}`,
-        background: C.bg, position: "sticky", top: 0, zIndex: 100,
+        display: "flex", 
+        justifyContent: "space-between", 
+        alignItems: "center",
+        // 👍 Dynamic padding contract to give branding breathable area space on mobile sandboxes
+        padding: isMobile ? "14px 16px" : "20px 48px", 
+        borderBottom: `1px solid ${C.border}`,
+        background: C.bg, 
+        position: "sticky", 
+        top: 0, 
+        zIndex: 100,
+        gap: "12px",
+        flexWrap: "nowrap"
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <AlaafiaLogo size={32} />
-          <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.5rem", fontWeight: 700, color: C.primary, letterSpacing: "-0.02em" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+          <AlaafiaLogo size={isMobile ? 28 : 32} />
+          <span style={{ 
+            fontFamily: "'Cormorant Garamond', serif", 
+            fontSize: isMobile ? "1.3rem" : "1.5rem", 
+            fontWeight: 700, 
+            color: C.primary, 
+            letterSpacing: "-0.02em" 
+          }}>
             Alaafia
           </span>
         </div>
-        <div style={{ display: "flex", gap: 12 }}>
-          {/* 👍 Maps direct to historical Sign In screen layout tab */}
-          <button style={btn("outline", { padding: "10px 22px", fontSize: "0.9rem" })} onClick={() => onGetStarted("login")}>Sign In</button>
-          {/* 👍 Maps direct to New Account screen layout tab */}
-          <button style={btn("accent",  { padding: "10px 22px", fontSize: "0.9rem" })} onClick={() => onGetStarted("signup")}>Get Started</button>
+        
+        {/* Navigation Action Buttons Group Controls Container */}
+        <div style={{ display: "flex", gap: isMobile ? 6 : 12, alignItems: "center", flexShrink: 0 }}>
+          <button 
+            style={btn("outline", { 
+              padding: isMobile ? "8px 14px" : "10px 22px", 
+              fontSize: isMobile ? "0.8rem" : "0.9rem" 
+            })} 
+            onClick={() => onGetStarted("login")}
+          >
+            Sign In
+          </button>
+          <button 
+            style={btn("accent",  { 
+              padding: isMobile ? "8px 14px" : "10px 22px", 
+              fontSize: isMobile ? "0.8rem" : "0.9rem" 
+            })} 
+            onClick={() => onGetStarted("signup")}
+          >
+            Get Started
+          </button>
         </div>
       </nav>
 
       {/* Hero Presentation Section */}
-      <section style={{ maxWidth: 1200, margin: "0 auto", padding: "90px 24px 70px", textAlign: "center" }}>
+      <section style={{ maxWidth: 1200, margin: "0 auto", padding: isMobile ? "60px 16px 40px" : "90px 24px 70px", textAlign: "center" }}>
         <div style={{
           display: "inline-block", background: `${C.accent}22`, color: C.accent,
           border: `1px solid ${C.accent}55`, borderRadius: 100, padding: "6px 18px",
@@ -79,7 +123,7 @@ export default function LandingPage({ onGetStarted }) {
 
         <h1 style={{
           fontFamily: "'Cormorant Garamond', serif",
-          fontSize: "clamp(2.8rem, 6vw, 4.5rem)",
+          fontSize: "clamp(2.5rem, 6vw, 4.5rem)",
           fontWeight: 700, color: C.primary, lineHeight: 1.1,
           marginBottom: 24, letterSpacing: "-0.02em",
         }}>
@@ -95,7 +139,6 @@ export default function LandingPage({ onGetStarted }) {
         </p>
 
         <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap", marginBottom: 64 }}>
-          {/* 👍 Maps direct to New Account creation tab */}
           <button style={btn("primary", { fontSize: "1rem", padding: "15px 36px" })} onClick={() => onGetStarted("signup")}>
             Start for Free →
           </button>
@@ -152,7 +195,7 @@ export default function LandingPage({ onGetStarted }) {
       </section>
 
       {/* Features Values Grid */}
-      <section style={{ background: C.surface, padding: "80px 48px" }}>
+      <section style={{ background: C.surface, padding: isMobile ? "60px 16px" : "80px 48px" }}>
         <div style={{ maxWidth: 980, margin: "0 auto" }}>
           <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2.4rem", fontWeight: 700, color: C.primary, textAlign: "center", marginBottom: 56 }}>
             Designed Around Your Health Realities
@@ -170,7 +213,7 @@ export default function LandingPage({ onGetStarted }) {
       </section>
 
       {/* Onboarding Functional Steps */}
-      <section style={{ padding: "80px 48px", maxWidth: 980, margin: "0 auto" }}>
+      <section style={{ padding: isMobile ? "60px 16px" : "80px 48px", maxWidth: 980, margin: "0 auto" }}>
         <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2.4rem", fontWeight: 700, color: C.primary, textAlign: "center", marginBottom: 56 }}>
           Simple, Direct, and Reliable
         </h2>
@@ -200,13 +243,13 @@ export default function LandingPage({ onGetStarted }) {
         </button>
       </section>
 
-      {/* footer block : */}
-      <footer style={{ padding: "40px 48px", textAlign: "center", color: C.muted, fontSize: "0.85rem", borderTop: `1px solid ${C.border}`, display: "flex", flexDirection: "column", gap: "12px", alignItems: "center" }}>
+      {/* footer block */}
+      <footer style={{ padding: "40px 24px", textAlign: "center", color: C.muted, fontSize: "0.85rem", borderTop: `1px solid ${C.border}`, display: "flex", flexDirection: "column", gap: "12px", alignItems: "center" }}>
         <div style={{ display: "flex", gap: "24px", marginBottom: "4px" }}>
           <button onClick={() => onGetStarted("about")} style={{ background: "none", border: "none", color: C.muted, cursor: "pointer", fontSize: "0.85rem", padding: 0 }}>About Us</button>
           <button onClick={() => onGetStarted("privacy")} style={{ background: "none", border: "none", color: C.muted, cursor: "pointer", fontSize: "0.85rem", padding: 0 }}>Privacy Policy</button>
         </div>
-        <div>
+        <div style={{ lineHeight: 1.5 }}>
           © 2026 Alaafia · Safe educational framework not intended as direct diagnosis · Built with ❤️ in Nigeria 
         </div>
       </footer>
